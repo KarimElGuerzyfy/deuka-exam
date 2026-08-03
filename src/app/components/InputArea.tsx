@@ -110,7 +110,7 @@ export default function InputArea({ provider, onProviderChange }: InputAreaProps
         </section>
 
         {/* PART 2 — Picker: exam-set + task dropdowns */}
-        <section className="flex flex-wrap gap-2 mb-3 md:mb-5">
+        <section className="flex flex-col md:flex-row md:flex-wrap gap-2 mb-3 md:mb-5">
           <Select.Root
             value={currentExam?.id ?? ""}
             onValueChange={(v) => {
@@ -122,7 +122,7 @@ export default function InputArea({ provider, onProviderChange }: InputAreaProps
             }}
             disabled={availableExams.length === 0}
           >
-            <Select.Trigger className={`${triggerClass} min-w-[120px] flex-none`}>
+            <Select.Trigger className={`${triggerClass} w-full md:w-auto md:min-w-[120px] md:flex-none`}>
               <Select.Value placeholder="Keine Prüfung">
                 {currentExam ? currentExam.setLabel : null}
               </Select.Value>
@@ -156,7 +156,7 @@ export default function InputArea({ provider, onProviderChange }: InputAreaProps
             }}
             disabled={!currentExam || currentExam.tasks.length === 0}
           >
-            <Select.Trigger className={`${triggerClass} min-w-[200px] flex-1`}>
+            <Select.Trigger className={`${triggerClass} w-full md:w-auto md:min-w-[200px] md:flex-1`}>
               <Select.Value placeholder="Keine Aufgabe">
                 {current ? (isMobile ? current.shortLabel : current.label) : null}
               </Select.Value>

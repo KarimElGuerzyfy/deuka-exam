@@ -6,7 +6,7 @@ interface NavbarProps {
 
 export default function Navbar({ initials = "DR" }: NavbarProps) {
   return (
-    <nav className="flex h-[50px] items-center justify-between bg-white px-16 py-3">
+    <nav className="flex h-[50px] items-center justify-between bg-white px-[calc(12px+clamp(20px,3.5vw,32px))] py-3 md:px-[calc(24px+clamp(20px,3.5vw,32px))] lg:px-16">
       <Image
         src="/logo.svg"
         alt="Deuka"
