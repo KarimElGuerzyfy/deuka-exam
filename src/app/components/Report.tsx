@@ -82,7 +82,7 @@ function SummarySection({
         ÖSD / Goethe – B1 Schreiben
       </h1>
 
-      <section className="mt-6 rounded-2xl bg-[var(--dropdown-bg)] py-6 px-4">
+      <section className="mt-6 rounded-xl bg-[var(--dropdown-bg)] py-6 px-4">
         {/* score band */}
         <div className="flex items-center justify-between">
           <div
@@ -92,7 +92,7 @@ function SummarySection({
             {overall.total_points} / {overall.max_points}
           </div>
           <span
-            className="rounded-full border px-4 py-1.5 text-sm font-bold"
+            className="rounded-[10px] border px-4 py-2.5 text-[20px] font-bold"
             style={{
               color: passed ? "var(--passed-text)" : "var(--danger-text)",
               borderColor: passed ? "var(--passed-border)" : "var(--danger-border)",
@@ -113,9 +113,8 @@ function SummarySection({
           />
         </div>
 
-        <p className="mt-3 text-sm text-[var(--instructions)]">
-          {passed ? "Pass" : "Fail"} — {overall.total_points}/{overall.max_points} · Pass Mark{" "}
-          <span className="font-bold">60</span>
+        <p className="mt-3 text-[14px] font-bold text-[var(--ink)]">
+          {passed ? "Pass" : "Fail"} — {overall.total_points}/{overall.max_points} · Pass Mark 60
         </p>
 
         {/* three task cards */}
@@ -133,8 +132,8 @@ function SummarySection({
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[var(--ink)]">Aufgabe {t.task}</span>
-                  <span className="font-bold text-[var(--ink)]">
+                  <span className="text-[20px] font-bold text-[var(--ink)]">Aufgabe {t.task}</span>
+                  <span className="text-[20px] font-bold text-[var(--ink)]">
                     {t.task_points}/{t.task_max}
                   </span>
                 </div>
@@ -150,7 +149,7 @@ function SummarySection({
         </div>
 
         {/* disclaimer */}
-        <p className="mt-4 text-sm text-[var(--placeholder)]">
+        <p className="mt-4 text-[14px] text-[var(--placeholder)]">
           Automatische Einschätzung nach den offiziellen Goethe/ÖSD-Kriterien. Keine offizielle Bewertung.
         </p>
       </section>
