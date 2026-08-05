@@ -11,6 +11,15 @@
   --placeholder: #838383;
   --body-text: #1F1F1F;
 
+  /* Result zones — score / task pass-fail states */
+  --danger-bg: #F3E8E8;
+  --danger-border: #D62323;
+  --danger-text: #C94648;
+
+  --passed-bg: #E8F4E4;
+  --passed-border: #6EC74B;
+  --passed-text: #4A9C6D;
+
   /* Provider theme — defaults to ÖSD */
   --surface: #AED0DD;
   --accent: #08A1DC;
