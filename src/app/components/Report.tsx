@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { sampleReport, cleanErrors, type ReportData, type ReportTask, type Band } from "../data/sampleReport";
 
 // ─────────────────────────────────────────────────────────────
@@ -15,7 +16,8 @@ import { sampleReport, cleanErrors, type ReportData, type ReportTask, type Band 
 //   Part 1 — static summary (title, overall score, 3 task cards,
 //            disclaimer). Same for all tasks, data-driven.
 //   Part 2 — per-Aufgabe block as a CAROUSEL. One Aufgabe visible
-//            at a time; arrows disable at the ends; "n / 3" indicator.
+//            at a time; arrows float on top (absolute), hidden at
+//            the ends; "n / 3" indicator.
 // ─────────────────────────────────────────────────────────────
 
 const CRITERIA: { key: keyof ReportTask["criteria"]; label: string }[] = [
@@ -52,9 +54,9 @@ export default function Report({ data = sampleReport }: { data?: ReportData }) {
       <TaskCarousel tasks={tasks} />
 
       {/* ── Priority next step ─────────────────────────────── */}
-      <section className="mt-8 rounded-2xl border-2 border-[var(--accent)] p-5 md:p-6">
-        <h2 className="text-lg md:text-xl font-bold text-[var(--heading)]">Priority Next Step</h2>
-        <p className="mt-2 text-sm md:text-base text-[var(--body-text)] leading-relaxed">
+      <section className="mt-8 rounded-2xl border-2 border-[var(--accent)] py-6 px-4">
+        <h2 className="text-lg md:text-xl font-bold text-[var(--ink)]">Priority Next Step</h2>
+        <p className="mt-2 text-base font-bold text-[var(--body-text)] leading-relaxed">
           {priority_next_step}
         </p>
       </section>
@@ -159,7 +161,9 @@ function SummarySection({
 
 // ═════════════════════════════════════════════════════════════
 // PART 2 — CAROUSEL
-// One Aufgabe visible at a time. Arrows disable at the ends.
+// Arrows float ON TOP of the slide (absolute), not in the flow.
+// Uses /public/skiparrow.svg. Assumed to point RIGHT; the left
+// arrow is flipped with rotate-180.
 // ═════════════════════════════════════════════════════════════
 function TaskCarousel({ tasks }: { tasks: ReportTask[] }) {
   const [index, setIndex] = useState(0);
@@ -167,36 +171,38 @@ function TaskCarousel({ tasks }: { tasks: ReportTask[] }) {
   const atEnd = index === tasks.length - 1;
 
   return (
-    <div className="mt-10">
-      {/* slide + side arrows */}
-      <div className="flex items-stretch gap-2 md:gap-4">
-        {/* left arrow */}
-        <div className="flex items-center">
-          <ArrowButton
-            direction="left"
-            disabled={atStart}
+    <div className="mt-10 py-6 px-4">
+      {/* relative wrapper so arrows can be absolutely placed over it */}
+      <div className="relative">
+        {/* current slide — full width, arrows don't take space */}
+        <TaskSlide task={tasks[index]} />
+
+        {/* left arrow — floats over the left edge, vertically centered */}
+        {!atStart && (
+          <button
+            aria-label="Vorherige Aufgabe"
             onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          />
-        </div>
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/5 lg:-translate-x-1/2 z-10 cursor-pointer transition-transform hover:scale-110 active:scale-95"
+          >
+            <Image src="/skiparrow.svg" alt="" width={60} height={60} className="rotate-180" />
+          </button>
+        )}
 
-        {/* current slide */}
-        <div className="flex-1 min-w-0">
-          <TaskSlide task={tasks[index]} />
-        </div>
-
-        {/* right arrow */}
-        <div className="flex items-center">
-          <ArrowButton
-            direction="right"
-            disabled={atEnd}
+        {/* right arrow — floats over the right edge, vertically centered */}
+        {!atEnd && (
+          <button
+            aria-label="Nächste Aufgabe"
             onClick={() => setIndex((i) => Math.min(tasks.length - 1, i + 1))}
-          />
-        </div>
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/5 lg:translate-x-1/2 z-10 cursor-pointer transition-transform hover:scale-110 active:scale-95"
+          >
+            <Image src="/skiparrow.svg" alt="" width={60} height={60} />
+          </button>
+        )}
       </div>
 
       {/* position indicator: "n / 3" + dots */}
       <div className="mt-4 flex flex-col items-center gap-2">
-        <span className="text-sm font-semibold text-[var(--instructions)]">
+        <span className="text-base font-bold text-[var(--ink)]">
           {index + 1} / {tasks.length}
         </span>
         <div className="flex gap-2">
@@ -218,32 +224,6 @@ function TaskCarousel({ tasks }: { tasks: ReportTask[] }) {
   );
 }
 
-function ArrowButton({
-  direction,
-  disabled,
-  onClick,
-}: {
-  direction: "left" | "right";
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={direction === "left" ? "Vorherige Aufgabe" : "Nächste Aufgabe"}
-      className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-opacity"
-      style={{
-        background: "var(--ink)",
-        opacity: disabled ? 0.25 : 1,
-        cursor: disabled ? "default" : "pointer",
-      }}
-    >
-      {direction === "left" ? "‹" : "›"}
-    </button>
-  );
-}
-
 // ═════════════════════════════════════════════════════════════
 // One Aufgabe slide: heading + four criterion cards + corrected text.
 // ═════════════════════════════════════════════════════════════
@@ -254,7 +234,7 @@ function TaskSlide({ task }: { task: ReportTask }) {
     <section>
       <h2 className="text-xl md:text-2xl font-bold text-[var(--ink)]">
         Aufgabe {task.task}{" "}
-        <span className="font-normal text-[var(--instructions)]">
+        <span className="font-normal text-xl md:text-2xl text-[var(--ink)]">
           {TASK_TYPE[task.task] ?? ""}
         </span>
       </h2>
@@ -264,16 +244,27 @@ function TaskSlide({ task }: { task: ReportTask }) {
           const c = task.criteria[key];
           const max = maxForCriterion(task.task, key);
           return (
-            <div key={key} className="rounded-2xl border border-[var(--btn-inactive)] p-4 md:p-5">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <span className="font-bold text-[var(--ink)] md:w-[140px] shrink-0">{label}</span>
-                <BandStrip active={c.band} />
-                <span className="font-bold text-[var(--ink)] md:w-[70px] md:text-right shrink-0">
+            <div key={key} className="rounded-2xl border border-[var(--btn-inactive)] px-4 py-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                {/* label + score pair (score visible on phone/tablet only) */}
+                <div className="flex items-center justify-between md:justify-start md:w-auto shrink-0">
+                  <span className="font-bold text-[var(--ink)]">{label}</span>
+                  <span className="font-bold text-[var(--ink)] md:hidden">{c.points}/{max}</span>
+                </div>
+
+                {/* pills */}
+                <div className="flex-1 flex flex-wrap justify-center gap-2">
+                  <BandStrip active={c.band} />
+                </div>
+
+                {/* score on desktop only */}
+                <span className="hidden md:block font-bold text-[var(--ink)] md:text-right shrink-0">
                   {c.points}/{max}
                 </span>
               </div>
+
               {c.comment && (
-                <p className="mt-3 text-sm text-[var(--body-text)] leading-relaxed">{c.comment}</p>
+                <p className="mt-4 text-base font-bold text-[var(--ink)] leading-relaxed">{c.comment}</p>
               )}
             </div>
           );
@@ -282,10 +273,10 @@ function TaskSlide({ task }: { task: ReportTask }) {
 
       {/* corrected text */}
       <div className="mt-4">
-        <span className="inline-block rounded-lg border border-[var(--btn-inactive)] px-3 py-1 text-sm font-bold text-[var(--ink)]">
+        <span className="inline-block rounded-lg border border-[var(--btn-inactive)] px-2 py-1 text-base font-bold text-center text-[var(--ink)]">
           corrected text
         </span>
-        <p className="mt-3 whitespace-pre-line text-sm md:text-base text-[var(--body-text)] leading-relaxed">
+        <p className="mt-4 text-base font-bold text-[var(--ink)] leading-relaxed">
           {task.corrected_text}
         </p>
       </div>
@@ -308,16 +299,17 @@ function TaskSlide({ task }: { task: ReportTask }) {
 
 function BandStrip({ active }: { active: Band }) {
   return (
-    <div className="flex flex-1 flex-wrap gap-2">
+    <div className="flex w-full flex-wrap justify-center gap-2">
       {BAND_LABELS.map(({ band, label }) => {
         const on = band === active;
         return (
           <span
             key={band}
-            className="rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold text-center"
+            className="flex-1 min-w-[100px] md:flex-none md:w-[120px] rounded-lg border px-2 py-1 text-base font-bold text-center"
             style={{
               background: on ? "var(--accent)" : "transparent",
-              color: on ? "#fff" : "var(--instructions)",
+              borderColor: on ? "var(--accent)" : "var(--btn-inactive)",
+              color: on ? "#fff" : "var(--ink)",
             }}
           >
             {label}
