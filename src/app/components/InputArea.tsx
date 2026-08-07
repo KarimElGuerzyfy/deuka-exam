@@ -347,7 +347,7 @@ const triggerClass =
   "appearance-none rounded-[12px] border border-[#E5E5E5] bg-[var(--dropdown-bg)] pl-4 pr-3 py-2 font-[inherit] text-base md:text-xl font-bold text-[var(--btn-text)] cursor-pointer flex items-center justify-between gap-2 text-left";
 
 const panelClass =
-  "z-50 overflow-hidden rounded-[12px] border border-[#E5E5E5] bg-[var(--dropdown-bg)] shadow-[0_10px_30px_-12px_rgba(0,0,0,.25)] w-[var(--radix-select-trigger-width)]";
+  "z-50 overflow-hidden rounded-[12px] border border-[#E5E5E5] bg-[var(--dropdown-bg)] shadow-[0_10px_30px_-12px_rgba(0,0,0,.25)] w-[var(--radix-select-trigger-width)] max-h-[208px] md:max-h-[360px] overflow-y-auto";
 
 const itemClass =
   "cursor-pointer select-none rounded-[8px] px-4 py-2 font-[inherit] text-base md:text-xl font-bold text-[var(--btn-text)] outline-none data-[highlighted]:bg-[var(--btn-inactive)] data-[state=checked]:bg-[var(--accent)]";
