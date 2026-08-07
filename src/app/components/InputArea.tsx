@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import * as Select from "@radix-ui/react-select";
 import Image from "next/image";
 import type { Provider } from "../page";
-import { EXAMS, getExamsBy } from "../data/exams";
+import { getExamsBy, type Exam } from "../data/exams";
 import { countWords, getStatus } from "../lib/wordStatus";
 
 interface InputAreaProps {
@@ -38,17 +38,54 @@ function getMobileServerSnapshot() {
 
 export default function InputArea({ provider, onProviderChange }: InputAreaProps) {
   const [level, setLevel] = useState("B1");
-  const [selectedExamId, setSelectedExamId] = useState(EXAMS[0].id);
-  const [selectedTaskId, setSelectedTaskId] = useState(EXAMS[0].tasks[0].id);
+  const [availableExams, setAvailableExams] = useState<Exam[]>([]);
+  const [examsLoading, setExamsLoading] = useState(true);
+  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState(false);
   const isMobile = useSyncExternalStore(subscribeMobile, getMobileSnapshot, getMobileServerSnapshot);
 
-  const availableExams = getExamsBy(provider, "B1");
-  const currentExam = availableExams.find((e) => e.id === selectedExamId) ?? availableExams[0];
-  const current = currentExam?.tasks.find((t) => t.id === selectedTaskId) ?? currentExam?.tasks[0];
+  // Fetch exams for the selected provider + level from Supabase.
+  // Re-runs whenever provider or level changes. Level is pinned to B1
+  // in the UI for now, but wiring it in means A2/B2 "just work" later.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadExams() {
+      setExamsLoading(true);
+      try {
+        const exams = await getExamsBy(provider, "B1");
+        if (cancelled) return;
+        setAvailableExams(exams);
+        const first = exams[0];
+        setSelectedExamId(first ? first.id : null);
+        setSelectedTaskId(first ? first.tasks[0].id : null);
+        setDone(false);
+        setError(false);
+      } catch {
+        if (cancelled) return;
+        setAvailableExams([]);
+        setSelectedExamId(null);
+        setSelectedTaskId(null);
+      } finally {
+        if (!cancelled) setExamsLoading(false);
+      }
+    }
+
+    loadExams();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [provider, level]);
+
+  const currentExam =
+    availableExams.find((e) => e.id === selectedExamId) ?? availableExams[0];
+  const current =
+    currentExam?.tasks.find((t) => t.id === selectedTaskId) ?? currentExam?.tasks[0];
   const count = countWords(text);
   const bounds = current ? { min: current.min, max: current.max, target: current.target } : null;
   const status = bounds ? getStatus(count, bounds) : null;
@@ -184,7 +221,9 @@ export default function InputArea({ provider, onProviderChange }: InputAreaProps
 
         {/* PART 3 — Writing: Aufgabe card + textarea + progress + footer */}
         <section className="flex flex-col gap-[18px]">
-          {!current || !bounds || !status ? (
+          {examsLoading ? (
+            <div className={bannerClass("done")}>Prüfungen werden geladen…</div>
+          ) : !current || !bounds || !status ? (
             <div className={bannerClass("error")}>
               Für {PROVIDERS.find((p) => p.id === provider)?.label ?? provider} sind aktuell noch
               keine B1-Prüfungen verfügbar.
